@@ -1,21 +1,35 @@
-# 🚀 Mastering `uv`: The 2025 Python Workflow on WSL
+# 🚀 Mastering `uv`: The 2025 Python Workflow (WSL & macOS)
 
-**`uv`** is an extremely fast Python package installer and resolver, written in Rust. It replaces `pip`, `poetry`, `pip-tools`, `virtualenv`, and `pyenv` with a single binary.
+**`uv`** is an ultra-fast Python package installer and resolver, written in Rust. It replaces `pip`, `poetry`, `pip-tools`, `virtualenv`, and `pyenv` with a single binary.
 
-> **💡 Why it matters:** On WSL (Windows Subsystem for Linux), file I/O is expensive. `uv` uses a global cache and hardlinks, meaning it creates virtual environments in milliseconds without copying files.
+> **💡 The Speed Advantage:**
+> * **On WSL:** Bypasses slow Windows file I/O using a global cache and hardlinks.
+> * **On macOS (M4/Apple Silicon):** Instantly fetches optimized ARM64 Python builds, eliminating "Python Version Hell" and Rosetta requirements.
 
 ---
 
-## 🛠️ 1. Installation (WSL)
+## 🛠️ 1. Installation
 
+### 🐧 For WSL (Ubuntu)
 Treat your WSL instance like a standard Linux server.
 
 ```bash
 # Install via official script
-curl -LsSf https://astral.sh/uv/install.sh | sh
+curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
 
 # Restart shell, then verify
 uv --version
+```
+
+### 🍎 For macOS (M-Series)
+You can use Homebrew, but the standalone installer is often cleaner.
+
+```zsh
+# Option A: Standalone (Recommended)
+curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
+
+# Option B: Homebrew
+brew install uv
 ```
 
 ---
@@ -24,7 +38,7 @@ uv --version
 
 The biggest shift in 2025 is moving away from `source .venv/bin/activate`.
 
-* **Old Way:** explicit state change in the terminal.
+* **Old Way:** Explicit state change in the terminal.
 * **`uv` Way:** `uv run` automatically finds the environment and ensures it is synced before execution.
 
 ```bash
@@ -44,8 +58,10 @@ Stop using `mkdir` and `python -m venv`.
 uv init my-backend
 cd my-backend
 
-# 2. Pin a specific Python version (downloads it automatically if missing)
+# 2. Pin a specific Python version
 uv python pin 3.12
+# Note: On Mac, this automatically pulls the optimized ARM64 build.
+# Note: On WSL, this downloads a standalone Linux build.
 
 # 3. Install dependencies (updates pyproject.toml & uv.lock)
 uv add fastapi uvicorn pydantic
@@ -97,16 +113,22 @@ rm requirements.txt
 
 ---
 
-## 🔄 5. Switching Contexts
+## 🔄 5. Switching Contexts & Platform Specifics
 
-How do you switch environments between Project A and Project B? **You just `cd`.**
+To switch projects, simply **change directories** (`cd`). `uv` creates a `.venv` inside every project directory.
 
-`uv` creates a `.venv` inside every project directory. There is no global state to manage.
+### 🐧 WSL Specific "Gotchas"
+* **File System Speed:** Always keep your projects in the Linux filesystem (`/home/user/projects`), **NOT** in the Windows mount (`/mnt/c/...`). The Windows file bridge kills performance.
 
-1.  `cd ~/projects/backend-api` -> `uv run` uses Python 3.10
-2.  `cd ~/projects/data-science` -> `uv run` uses Python 3.12
-
-> **⚠️ Critical WSL Tip:** Always keep your projects in the Linux filesystem (`/home/user/projects`), NOT in the Windows mount (`/mnt/c/...`). The Windows file bridge kills performance.
+### 🍎 macOS Specific "Gotchas"
+* **VS Code Setup:** Since `uv` doesn't "activate" the shell, VS Code might not see the environment immediately.
+    1.  `Cmd + Shift + P` -> "Python: Select Interpreter".
+    2.  Select the entry marked `.venv` or `Recommended`.
+* **Zsh Autocomplete:** To get nice tab completion in your terminal:
+    ```zsh
+    echo 'eval "$(uv generate-shell-completion zsh)"' >> ~/.zshrc
+    source ~/.zshrc
+    ```
 
 ---
 
@@ -120,4 +142,5 @@ How do you switch environments between Project A and Project B? **You just `cd`.
 | **Install All** | `pip install -r requirements.txt` | `uv sync` (if lockfile exists) |
 | **Run Script** | `source venv/bin/activate && python app.py` | `uv run app.py` |
 | **Run Global Tool** | `pipx run black` | `uvx black` |
+| **Manage Python** | `pyenv install 3.12` | `uv python pin 3.12` |
 | **Update All** | *Manual Nightmare* | `uv lock --upgrade` |
