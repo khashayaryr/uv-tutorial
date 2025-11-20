@@ -15,7 +15,7 @@ Treat your WSL instance like a standard Linux server.
 
 ```bash
 # Install via official script
-curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Restart shell, then verify
 uv --version
@@ -26,7 +26,7 @@ You can use Homebrew, but the standalone installer is often cleaner.
 
 ```zsh
 # Option A: Standalone (Recommended)
-curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Option B: Homebrew
 brew install uv
